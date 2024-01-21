@@ -1,0 +1,250 @@
+from datetime import datetime, timedelta
+import random
+import time
+
+
+class Basket:
+    def __init__(self, size):
+        self.size = size
+
+    def get_size(self):
+        return self.size
+
+
+class Customer:
+    CASHIER_PROCESSING_TIME = 4
+    SELF_SERVICE_PROCESSING_TIME = 6
+    LOTTERY_THRESHOLD = 10
+
+    def __init__(self, identifier):
+        self.identifier = identifier
+        self.basket = Basket(random.randint(1, 30))
+        self.lottery_ticket = self.basket.get_size() >= self.LOTTERY_THRESHOLD
+
+    def get_basket_size(self):
+        return self.basket.get_size()
+
+    def get_checkout_time(self, is_self_service):
+        processing_time = (
+            self.basket.get_size() * self.SELF_SERVICE_PROCESSING_TIME
+            if is_self_service
+            else self.basket.get_size() * self.CASHIER_PROCESSING_TIME
+        )
+        return processing_time
+
+    def award_lottery_ticket(self):
+        return self.lottery_ticket
+
+    def display_customer_details(self, is_self_service):
+        print(f"### Customer details ###")
+        print(f"{self.identifier} →> items in basket: {self.basket.get_size()}, {'wins a lottery ticket!' if self.lottery_ticket else 'hard luck, no lottery ticket this time!'}")
+        print(f"time to process basket at {'self-service' if is_self_service else 'cashier'} till: {self.get_checkout_time(is_self_service)} Secs")
+
+    def checkout(self):
+        checkout_time = self.get_checkout_time(is_self_service=self.lottery_ticket)
+        return checkout_time
+
+
+class CheckoutLane:
+    REGULAR_LANE_CAPACITY = 5
+    SELF_SERVICE_LANE_CAPACITY = 15
+
+    def __init__(self, lane_type, lane_id):
+        self.lane_type = lane_type
+        self.lane_id = lane_id
+        self.status = 'closed'
+        self.customers = []
+
+    def add_customer(self, customer):
+        if len(self.customers) < self.get_lane_capacity():
+            self.customers.append(customer)
+        else:
+            print(f"Cannot add customer {customer.identifier} to Lane {self.lane_id}. Lane is full.")
+
+    def remove_customer(self, customer):
+        if customer in self.customers:
+            self.customers.remove(customer)
+
+    def open_lane(self):
+        self.status = 'opened'
+        # print(f"L{self.lane_id} ({self.lane_type}) is now open.")
+
+    def close_lane(self):
+        self.status = 'closed'
+        print(f"L{self.lane_id} ({self.lane_type}) is now closed.")
+
+    def display_lane_status(self):
+        print(f"L{self.lane_id} ({self.lane_type}) -> {' '.join('*' for _ in range(len(self.customers))) if self.status == 'opened' else 'closed'}")
+
+    def get_lane_capacity(self):
+        return (
+            self.REGULAR_LANE_CAPACITY
+            if self.lane_type == 'Reg'
+            else self.SELF_SERVICE_LANE_CAPACITY
+        )
+
+    def process_customers(self):
+        processed_customers = []
+        for customer in self.customers:
+            checkout_time = customer.get_checkout_time(self.lane_type == 'Slf')
+            if checkout_time <= 0:
+                processed_customers.append(customer)
+                self.remove_customer(customer)
+                print(f"Customer {customer.identifier} checked out and left Lane {self.lane_id} ({self.lane_type})")
+
+        return processed_customers
+
+class RegularLane(CheckoutLane):
+    def __init__(self, lane_id):
+        super().__init__('Reg', lane_id)
+
+    def get_lane_capacity(self):
+        return self.REGULAR_LANE_CAPACITY
+
+
+class SelfServiceLane(CheckoutLane):
+    def __init__(self, lane_id):
+        super().__init__('Slf', lane_id)
+
+    def get_lane_capacity(self):
+        return self.SELF_SERVICE_LANE_CAPACITY
+
+
+def set_up_lanes():
+    lanes = [RegularLane(i) for i in range(1, 6)] + [SelfServiceLane(6)]
+    lanes[0].open_lane()
+    lanes[5].open_lane()
+    return lanes
+
+
+def initiate_simulation(lanes):
+    simulation_duration_seconds = int(input("Enter the duration of the simulation in seconds: "))
+    time_interval_seconds = 3  # You can adjust the time interval as needed
+
+    assign_customers_to_lanes(lanes, 10)
+
+    timestamp_start = datetime.now().strftime('%H:%M:%S')
+    print(f"### Lane status at the start of simulation ###")
+    print(f"Total number of customers waiting to check out at {timestamp_start} is: {get_total_customers(lanes)}")
+    display_lane_statuses(lanes)
+
+    run_simulation(lanes, simulation_duration_seconds, time_interval_seconds)
+
+
+def generate_random_customers(lanes, max_customers):
+    num_customers = random.randint(1, 5)
+    print(f"Generating {num_customers} customers...")
+    assign_customers_to_lanes(lanes, num_customers)
+
+
+def assign_customers_to_lanes(lanes, num_customers):
+    for _ in range(num_customers):
+        customer = Customer(get_total_customers(lanes) + 1)
+        lane = move_lane(lanes, customer)
+        if lane:
+            lane.add_customer(customer)
+            # print(f"Customer {customer.identifier} joined Lane {lane.lane_id} ({lane.lane_type})")
+            checkout_time = customer.checkout()
+            print(f"C{customer.identifier} estimated checkout time: {checkout_time} Secs")
+
+
+def move_lane(lanes, customer):
+    if customer.get_basket_size() < 10:
+        return get_self_service_lane(lanes)
+    else:
+        return get_regular_lane(lanes)
+
+
+def get_self_service_lane(lanes):
+    for lane in lanes:
+        if lane.lane_type == 'Slf' and lane.status == 'opened' and len(lane.customers) < lane.get_lane_capacity():
+            return lane
+    return None
+
+
+def get_regular_lane(lanes):
+    for lane in lanes:
+        if lane.lane_type == 'Reg' and lane.status == 'opened' and len(lane.customers) < lane.get_lane_capacity():
+            return lane
+    # If all regular lanes are full, find a closed one to open
+    for lane in lanes:
+        if lane.lane_type == 'Reg' and lane.status == 'closed':
+            lane.open_lane()
+            return lane
+    return None
+
+
+def get_total_customers(lanes):
+    return sum(len(lane.customers) for lane in lanes)
+
+
+def run_simulation(lanes, simulation_duration_seconds, time_interval_seconds, max_customers=5):
+    start_time = datetime.now()
+    end_time = start_time + timedelta(seconds=simulation_duration_seconds)
+
+    while datetime.now() < end_time:
+        time.sleep(time_interval_seconds)
+        current_time = datetime.now().strftime('%H:%M:%S')
+        print(f"\n### Lane status at {current_time} ###")
+        display_lane_statuses(lanes)
+        generate_random_customers(lanes, max_customers)
+        process_customers_in_lanes(lanes)
+        manage_lanes(lanes)
+
+    end_simulation()
+
+
+def process_customers_in_lanes(lanes):
+    for lane in lanes:
+        processed_customers = lane.process_customers()
+        for processed_customer in processed_customers:
+            award_lottery_ticket_if_eligible(processed_customer)
+
+
+def award_lottery_ticket_if_eligible(customer):
+    if customer.award_lottery_ticket():
+        print(f"Customer {customer.identifier} won a lottery ticket!")
+
+
+def manage_lanes(lanes):
+    for lane in lanes:
+        if lane.status == 'opened':
+            if len(lane.customers) == 0:
+                lane.close_lane()
+        elif lane.status == 'closed':
+            if len(lane.customers) > 0:
+                lane.open_lane()
+
+
+def display_lane_statuses(lanes):
+    for lane in lanes:
+        lane.display_lane_status()
+
+
+def display_all_customer_details(lanes):
+    print("\n### All Customer details after simulation  ###")
+
+    all_customers = []
+
+    # Collect all customers from lanes
+    for lane in lanes:
+        all_customers.extend(lane.customers)
+
+    # Sort customers based on their identifiers
+    all_customers.sort(key=lambda customer: customer.identifier)
+
+    # Display customer details
+    for customer in all_customers:
+        is_self_service = lane.lane_type == 'Slf' and customer.lottery_ticket
+        customer.display_customer_details(is_self_service=is_self_service)
+
+
+def end_simulation():
+    timestamp_end = datetime.now().strftime('%H:%M:%S')
+    print(f"\nSimulation ended at {timestamp_end}")
+
+
+if __name__ == "__main__":
+    lanes = set_up_lanes()
+    initiate_simulation(lanes)
+    display_all_customer_details(lanes)
