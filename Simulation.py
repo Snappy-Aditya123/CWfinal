@@ -7,7 +7,17 @@ import random
 class Simulation:
     def __init__(self):
         self.lane_manager = Lane_Management()
+        self.stop_flag = False
+        self.flag_lane = False
+    def stop_simulation(self):
+        self.stop_flag = True
+    def set_sim_flag(self):
+        self.stop_flag = False
+
+    def display_currentlane_statuses(self):
+        self.flag_lane = True
     
+
     def initiate_simulation(self):
         
         # Get the simulation duration from the user
@@ -25,6 +35,8 @@ class Simulation:
         print(f"------------Lane status at the start of simulation------------")
         print(
             f"Total number of customers waiting to check out at {timestamp_start} is: {self.lane_manager.get_total_customers(lanes)}")
+        
+        
         self.lane_manager.display_lane_statuses(lanes)
 
         # Start the simulation with the specified parameters
@@ -41,7 +53,7 @@ class Simulation:
         # Run the simulation loop until the end time is reached
         flag = 0 
         n = 0
-        while datetime.now() < end_time:
+        while datetime.now() < end_time and not self.stop_flag:
             # Pause execution to simulate the passage of time
             time.sleep(time_interval_seconds)
 
@@ -50,7 +62,12 @@ class Simulation:
             print(f"\n------------Lane status at {current_time}------------")
 
             # Display the current status of lanes
-            self.lane_manager.display_lane_statuses(lanes)
+            if self.flag_lane:
+                
+                self.lane_manager.display_lane_statuses(lanes)
+        
+            else:
+                pass
 
             # Generate a random number of customers and assign them to lanes
           
@@ -58,7 +75,6 @@ class Simulation:
         # Generate customers
                 self.lane_manager.generate_random_customers(lanes)
                 n += 1   
-            
             
 
             # Process customers in lanes and manage the status of lanes
@@ -68,6 +84,8 @@ class Simulation:
         # End the simulation and display the simulation end time
         Simulation.end_simulation()
         self.lane_manager.display_all_customer_details()
+    
+
 
     @staticmethod
     def end_simulation():

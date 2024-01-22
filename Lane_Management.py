@@ -3,7 +3,7 @@ from models import Regular_Lane, Self_service_lane, Customer
 import datetime
 class Lane_Management:
     def __init__(self):
-        self.all_customers = []
+        self.all_customers = [] #the all customers are saved here 
   
     def set_up_lanes(self):
         # Create regular lanes (1 to 5) and a self-service lane (6)
@@ -16,6 +16,7 @@ class Lane_Management:
     def generate_random_customers(self,lanes):
         flag = [lane.status for lane in lanes]
         if flag.count("full") == 6:
+            # sets falg if all the lanes are full no customer is generated
             pass
         else:
         # Generate a random number of customers (1 to 5)
@@ -31,6 +32,7 @@ class Lane_Management:
             customer = Customer(self.get_total_customers(lanes) + 1)
             lane = self.move_lane(lanes, customer)
             if lane:
+                #adding customers to the lane and the all_customers lists
                 self.all_customers.append(customer)
                 lane.add_customer(customer)
                 # Print information about the assigned customer

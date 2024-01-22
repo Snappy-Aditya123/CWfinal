@@ -66,7 +66,7 @@ class Lane:
 
     def process_checkout(self):
         
-        # Simulate the checkout process by processing the first customer in the lane.
+        # Simulate the checkout process by ckecking the customer checkout time through loop irreation
         if self.customers:
             for customer in self.customers:
                 checkout_time = customer.get_checkout_time(self.lane_type)
