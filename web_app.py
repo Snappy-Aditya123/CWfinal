@@ -1,4 +1,6 @@
+
 from flask import Flask, render_template, request, jsonify
+
 from threading import Thread
 from Simulation import Simulation
 
@@ -29,6 +31,7 @@ def start():
 
 
 @app.post('/stop')
+
 def stop():
     global simulation_thread
     simulation.stop_simulation()
