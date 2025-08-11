@@ -73,11 +73,14 @@ class Lane_Management:
     def get_self_service_lane(self,lanes):
         # Find an open self-service lane with available capacity
         for lane in lanes:
-            if lane.lane_type == 'Slf' and lane.status == 'opened' and len(lane.customers) < lane.get_lane_capacity():
+            if (
+                lane.lane_type == 'Slf'
+                and lane.status == 'opened'
+                and len(lane.customers) < lane.get_lane_capacity()
+            ):
                 return lane
-            else:
-                self.get_regular_lane(lanes)
-        return None
+        # If no suitable self-service lane found, fall back to a regular lane
+        return self.get_regular_lane(lanes)
 
    
     def get_regular_lane(self,lanes):

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout Simulation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
+        h1 { color: #333; }
+        form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        label { display: block; margin-top: 10px; }
+        input { padding: 5px; margin-top: 5px; width: 100%; box-sizing: border-box; }
+        button { margin-top: 15px; padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>Supermarket Checkout Simulation</h1>
+    <form method="post">
+        <label>Duration (seconds):
+            <input type="number" name="duration" min="1" value="60" required>
+        </label>
+        <label>Initial Customers:
+            <input type="number" name="initial_customers" min="0" value="10" required>
+        </label>
+        <button type="submit">Start Simulation</button>
+    </form>
+    <form action="{{ url_for('stop') }}" method="post">
+        <button type="submit">Stop Simulation</button>
+    </form>
+</body>
+</html>

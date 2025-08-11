@@ -100,3 +100,10 @@
 
 **5. Conclusion:**
    The Checkout Simulation System provides a flexible and extensible framework for simulating customer interactions in a retail checkout environment. Users can adjust parameters such as simulation duration, time intervals, and lane capacities to observe different scenarios. The system aims to mimic real-world checkout operations, providing insights into lane efficiency and customer experiences.
+
+---
+
+**6. Web Interface:**
+   - A simple Flask-based interface is included for visual control of the simulation.
+   - Run `python web_app.py` and open `http://localhost:5000` in a browser.
+   - The page allows setting the simulation duration and number of initial customers with buttons to start or stop the run.
