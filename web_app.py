@@ -1,11 +1,12 @@
+
 from flask import Flask, render_template, request, jsonify
+
 from threading import Thread
 from Simulation import Simulation
 
 app = Flask(__name__)
 simulation = Simulation()
 simulation_thread = None
-
 
 def _run_simulation(duration, initial_customers):
     simulation.set_sim_flag()
@@ -29,6 +30,7 @@ def start():
 
 
 @app.post('/stop')
+
 def stop():
     global simulation_thread
     simulation.stop_simulation()
