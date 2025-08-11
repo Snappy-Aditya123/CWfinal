@@ -9,24 +9,42 @@ class Simulation:
         self.lane_manager = Lane_Management()
         self.stop_flag = False
         self.flag_lane = False
+        self.lanes = []
     def stop_simulation(self):
         self.stop_flag = True
+        self.lanes = []
     def set_sim_flag(self):
         self.stop_flag = False
 
     def display_currentlane_statuses(self):
         self.flag_lane = True
+
+    def get_lane_states(self):
+        """Return a serializable snapshot of the current lane states."""
+        state = []
+        for lane in self.lanes:
+            state.append({
+                "id": lane.lane_id,
+                "type": lane.lane_type,
+                "status": lane.status,
+                "customers": [c.identifier for c in lane.customers],
+            })
+        return state
     
 
-    def initiate_simulation(self):
-        
-        # Get the simulation duration from the user
-        simulation_duration_seconds = int(input("Enter the duration of the simulation in seconds: "))
+    def initiate_simulation(self, simulation_duration_seconds, initial_customers=10):
+        """Start a simulation with the provided parameters.
+
+        Args:
+            simulation_duration_seconds (int): Length of the simulation run.
+            initial_customers (int, optional): Customers pre-assigned to lanes. Defaults to 10.
+        """
         time_interval_seconds = 3  # Time in seconds for the simulation to continue (3 seconds to see status)
         lanes = self.lane_manager.set_up_lanes()
+        self.lanes = lanes
 
-        # Assign 10 customers to lanes at the beginning of the simulation
-        self.lane_manager.assign_customers_to_lanes(lanes, 10)
+        # Assign initial customers to lanes at the beginning of the simulation
+        self.lane_manager.assign_customers_to_lanes(lanes, initial_customers)
 
         # Record the start time of the simulation
         timestamp_start = datetime.now().strftime('%H:%M:%S')
@@ -35,8 +53,7 @@ class Simulation:
         print(f"------------Lane status at the start of simulation------------")
         print(
             f"Total number of customers waiting to check out at {timestamp_start} is: {self.lane_manager.get_total_customers(lanes)}")
-        
-        
+
         self.lane_manager.display_lane_statuses(lanes)
 
         # Start the simulation with the specified parameters
