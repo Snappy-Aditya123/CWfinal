@@ -68,7 +68,6 @@ class TestIntegrationCases(unittest.TestCase):
         state = sim.get_lane_states()
         self.assertEqual(state[0]['customers'], ['X'])
 
-
     # Add more integration test cases based on specific interactions in your system.
 
 if __name__ == '__main__':

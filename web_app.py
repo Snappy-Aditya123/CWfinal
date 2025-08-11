@@ -8,6 +8,7 @@ app = Flask(__name__)
 simulation = Simulation()
 simulation_thread = None
 
+
 def _run_simulation(duration, initial_customers):
     simulation.set_sim_flag()
     simulation.initiate_simulation(duration, initial_customers)
