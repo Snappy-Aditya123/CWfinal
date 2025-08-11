@@ -47,9 +47,9 @@ class Lane:
         # Display the current status of the lane, including the number of customers.
         lane_info = f"L{self.lane_id} ({self.lane_type})"
 
-        if self.status == 'opened' or "full":
+        if self.status in ("opened", "full"):
             # Display asterisks representing customers in the lane, or indicate 'closed' if no customers.
-            customer_display = ' '.join('*' for i in range(len(self.customers))) if self.customers else 'closed'
+            customer_display = ' '.join('*' for _ in self.customers) if self.customers else 'closed'
         else:
             # If the lane is closed, display 'closed'.
             customer_display = 'closed'

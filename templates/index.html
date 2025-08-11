@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout Simulation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
+        h1 { color: #333; }
+        .controls { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        label { display: block; margin-top: 10px; }
+        input { padding: 5px; margin-top: 5px; width: 100%; box-sizing: border-box; }
+        button { margin-top: 15px; padding: 10px 20px; background: #007BFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #lanes { display: flex; flex-wrap: wrap; gap: 20px; }
+        .lane { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 10px; width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .lane.closed { opacity: 0.5; }
+        .lane h2 { margin: 0 0 10px; font-size: 16px; }
+        .customers { display: flex; flex-wrap: wrap; gap: 4px; }
+        .customer { width: 20px; height: 20px; border-radius: 50%; background: #007BFF; }
+    </style>
+</head>
+<body>
+    <h1>Supermarket Checkout Simulation</h1>
+    <div class="controls">
+        <form id="controlForm">
+            <label>Duration (seconds):
+                <input type="number" id="duration" min="1" value="60" required>
+            </label>
+            <label>Initial Customers:
+                <input type="number" id="initial_customers" min="0" value="10" required>
+            </label>
+            <button type="submit">Start Simulation</button>
+            <button type="button" id="stopBtn">Stop Simulation</button>
+        </form>
+    </div>
+    <div id="lanes"></div>
+    <script>
+        async function fetchState() {
+            const res = await fetch('/state');
+            const lanes = await res.json();
+            renderLanes(lanes);
+        }
+
+        function renderLanes(lanes) {
+            const container = document.getElementById('lanes');
+            container.innerHTML = '';
+            lanes.forEach(lane => {
+                const laneDiv = document.createElement('div');
+                laneDiv.className = 'lane ' + (lane.status !== 'opened' ? 'closed' : '');
+                const title = document.createElement('h2');
+                title.textContent = `Lane ${lane.id} (${lane.type})`;
+                laneDiv.appendChild(title);
+                const custDiv = document.createElement('div');
+                custDiv.className = 'customers';
+                lane.customers.forEach(() => {
+                    const c = document.createElement('div');
+                    c.className = 'customer';
+                    custDiv.appendChild(c);
+                });
+                laneDiv.appendChild(custDiv);
+                container.appendChild(laneDiv);
+            });
+        }
+
+        document.getElementById('controlForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const duration = document.getElementById('duration').value;
+            const initial_customers = document.getElementById('initial_customers').value;
+            await fetch('/start', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ duration, initial_customers })
+            });
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', async () => {
+            await fetch('/stop', { method: 'POST' });
+        });
+
+        setInterval(fetchState, 1000);
+        fetchState();
+    </script>
+</body>
+</html>
+

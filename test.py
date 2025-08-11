@@ -39,6 +39,35 @@ class TestIntegrationCases(unittest.TestCase):
         lane_manager.process_customers_in_lanes(lanes)
         self.assertTrue(any(customer.award_lottery_ticket() for customer in lane_manager.all_customers))
 
+    def test_customer_uses_regular_lane_when_self_service_unavailable(self):
+        lane_manager = Lane_Management()
+        lanes = lane_manager.set_up_lanes()
+        # close self-service lane to force fallback
+        for lane in lanes:
+            if lane.lane_type == 'Slf':
+                lane.close_lane()
+        customer = Customer(identifier="Test")
+        customer.basket._size = 5
+        selected_lane = lane_manager.move_lane(lanes, customer)
+        self.assertIsNotNone(selected_lane)
+        self.assertEqual(selected_lane.lane_type, 'Reg')
+
+    def test_display_lane_status_closed(self):
+        lane = Regular_Lane(1)
+        with patch('sys.stdout', new=StringIO()) as fake_out:
+            lane.display_lane_status()
+            self.assertIn('closed', fake_out.getvalue())
+
+    def test_simulation_state_snapshot(self):
+        sim = Simulation()
+        lane = Regular_Lane(1)
+        lane.open_lane()
+        customer = Customer(identifier='X')
+        lane.add_customer(customer)
+        sim.lanes = [lane]
+        state = sim.get_lane_states()
+        self.assertEqual(state[0]['customers'], ['X'])
+
     # Add more integration test cases based on specific interactions in your system.
 
 if __name__ == '__main__':
