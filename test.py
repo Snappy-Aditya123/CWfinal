@@ -39,6 +39,19 @@ class TestIntegrationCases(unittest.TestCase):
         lane_manager.process_customers_in_lanes(lanes)
         self.assertTrue(any(customer.award_lottery_ticket() for customer in lane_manager.all_customers))
 
+    def test_customer_uses_regular_lane_when_self_service_unavailable(self):
+        lane_manager = Lane_Management()
+        lanes = lane_manager.set_up_lanes()
+        # close self-service lane to force fallback
+        for lane in lanes:
+            if lane.lane_type == 'Slf':
+                lane.close_lane()
+        customer = Customer(identifier="Test")
+        customer.basket._size = 5
+        selected_lane = lane_manager.move_lane(lanes, customer)
+        self.assertIsNotNone(selected_lane)
+        self.assertEqual(selected_lane.lane_type, 'Reg')
+
     # Add more integration test cases based on specific interactions in your system.
 
 if __name__ == '__main__':
