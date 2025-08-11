@@ -52,6 +52,23 @@ class TestIntegrationCases(unittest.TestCase):
         self.assertIsNotNone(selected_lane)
         self.assertEqual(selected_lane.lane_type, 'Reg')
 
+    def test_display_lane_status_closed(self):
+        lane = Regular_Lane(1)
+        with patch('sys.stdout', new=StringIO()) as fake_out:
+            lane.display_lane_status()
+            self.assertIn('closed', fake_out.getvalue())
+
+    def test_simulation_state_snapshot(self):
+        sim = Simulation()
+        lane = Regular_Lane(1)
+        lane.open_lane()
+        customer = Customer(identifier='X')
+        lane.add_customer(customer)
+        sim.lanes = [lane]
+        state = sim.get_lane_states()
+        self.assertEqual(state[0]['customers'], ['X'])
+
+
     # Add more integration test cases based on specific interactions in your system.
 
 if __name__ == '__main__':

@@ -104,6 +104,7 @@
 ---
 
 **6. Web Interface:**
-   - A simple Flask-based interface is included for visual control of the simulation.
+   - A Flask-based interface with real-time lane visualization is included.
    - Run `python web_app.py` and open `http://localhost:5000` in a browser.
-   - The page allows setting the simulation duration and number of initial customers with buttons to start or stop the run.
+   - Use the on-page controls to set the duration and initial customers, then start or stop the simulation.
+   - Lane boxes update live to show customers joining and leaving each lane.
